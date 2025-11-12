@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 namespace VendingMachinesAPI.Services
 {
@@ -48,5 +49,6 @@ namespace VendingMachinesAPI.Services
             context.Update(product);
             await context.SaveChangesAsync();
         }
+
     }
 }
