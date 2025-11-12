@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace VendingMachinesAPI;
 
@@ -16,8 +17,8 @@ public partial class Product
     public int MinimumStock { get; set; }
 
     public string? SalesPropensity { get; set; }
-
+    [JsonIgnore]
     public virtual ICollection<ProductInMachine> ProductInMachines { get; set; } = new List<ProductInMachine>();
-
+    [JsonIgnore]
     public virtual ICollection<Sale> Sales { get; set; } = new List<Sale>();
 }

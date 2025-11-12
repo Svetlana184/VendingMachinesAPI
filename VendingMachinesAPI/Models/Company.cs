@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace VendingMachinesAPI;
 
@@ -17,5 +18,6 @@ public partial class Company
 
     public string? Description { get; set; }
 
+    [JsonIgnore]
     public virtual ICollection<Machine> Machines { get; set; } = new List<Machine>();
 }

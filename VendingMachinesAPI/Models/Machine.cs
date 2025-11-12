@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace VendingMachinesAPI;
 
@@ -74,24 +75,24 @@ public partial class Machine
     public string? RentStatus { get; set; }
 
     public int? PaybackPeriod { get; set; }
-
+    [JsonIgnore]
     public virtual ICollection<Contract> Contracts { get; set; } = new List<Contract>();
-
+    [JsonIgnore]
     public virtual User? EngineerNavigation { get; set; }
-
+    [JsonIgnore]
     public virtual Company IdCompanyNavigation { get; set; } = null!;
-
+    [JsonIgnore]
     public virtual User? ManagerNavigation { get; set; }
-
+    [JsonIgnore]
     public virtual User? OperatorNavigation { get; set; }
-
+    [JsonIgnore]
     public virtual ICollection<PaymentSystem> PaymentSystems { get; set; } = new List<PaymentSystem>();
-
+    [JsonIgnore]
     public virtual ICollection<ProductInMachine> ProductInMachines { get; set; } = new List<ProductInMachine>();
-
+    [JsonIgnore]
     public virtual ICollection<Rent> Rents { get; set; } = new List<Rent>();
-
+    [JsonIgnore]
     public virtual ICollection<Sale> Sales { get; set; } = new List<Sale>();
-
+    [JsonIgnore]
     public virtual ICollection<Service> Services { get; set; } = new List<Service>();
 }

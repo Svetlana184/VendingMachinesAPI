@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Cryptography;
 using System.Security.Claims;
 using System.Text;
 using VendingMachinesAPI;
@@ -116,20 +117,27 @@ app.MapControllers();
 app.UseCors("CorsPolicy");
 
 app.MapGet("/", () => "Hello World!");
-app.Map("/login/api/v1/SignIn", async (User emp, VendingMachinesContext db) =>
+app.Map("/login/api/v1/SignIn", async (User emp) =>
 {
-    User? employee = await db.Users.FirstOrDefaultAsync(p => p.Login == emp.Login && p.Password == emp.Password);
-    if (employee is null)
+ 
+    User employee = null;
+    using (VendingMachinesContext db = new VendingMachinesContext())
     {
-        My_errors newError = new My_errors()
+        employee = await db.Users.FirstOrDefaultAsync(p => p.Login == emp.Login);
+        string password = AuthOptions.GenerateSha256Hash(emp.Password);
+        if (employee == null || employee.Password != password)
         {
-            Timestamp = DateTime.Now.Ticks,
-            Message = "íåïðàâèëüíûå àâòîðèçàöèîííûå äàííûå",
-            ErrorCode = 1401
-        };
-        return Results.Json(newError);
+            My_errors newError = new My_errors()
+            {
+                Timestamp = DateTime.Now.Ticks,
+                Message = "íåïðàâèëüíûå àâòîðèçàöèîííûå äàííûå",
+                ErrorCode = 1401
+            };
+            return Results.Json(newError);
+        }
     }
-    var claims = new List<Claim> { new Claim(ClaimTypes.Surname, emp.Password) };
+
+    var claims = new List<Claim> { new Claim(ClaimTypes.Name, emp.Password) };
     // ñîçäàåì JWT-òîêåí
     var jwt = new JwtSecurityToken(
             issuer: AuthOptions.ISSUER,
@@ -148,7 +156,41 @@ app.Map("/login/api/v1/SignIn", async (User emp, VendingMachinesContext db) =>
 });
 
 
+app.MapPost("/register", async (User user, VendingMachinesContext db) =>
+{
+
+    user.Password = AuthOptions.GenerateSha256Hash(user.Password);
+    db.Users.Add(user);
+    await db.SaveChangesAsync();
+    User createdUser = db.Users.FirstOrDefault(p => p.Login == user.Login)!;
+    return Results.Ok(createdUser);
+});
+
+
 app.Run();
+byte[] StringToByte(string str)
+{
+    string[] strings = str.Trim().Split(" ");
+    byte[] bytes = new byte[strings.Length];
+    for (int i = 0; i < strings.Length; i++)
+    {
+        bytes[i] = byte.Parse(strings[i]);
+    }
+    return bytes;
+}
+
+string ByteToString(byte[] bytes)
+{
+    string result = "";
+    for (int i = 0; i < bytes.Length; i++)
+    {
+        result += bytes[i] + " ";
+    }
+    return result;
+}
+var context = app.Services.CreateScope().ServiceProvider.
+    GetRequiredService<VendingMachinesContext>();
+SeedData.SeedDatabase(context);
 public class AuthOptions
 {
     public const string ISSUER = "MyAuthServer"; // èçäàòåëü òîêåíà
@@ -156,4 +198,11 @@ public class AuthOptions
     const string KEY = "mysupersecret_secretsecretsecretkey!123";   // êëþ÷ äëÿ øèôðàöèè
     public static SymmetricSecurityKey GetSymmetricSecurityKey() =>
         new SymmetricSecurityKey(Encoding.UTF8.GetBytes(KEY));
+
+    public static string GenerateSha256Hash(string password)
+    {
+        var sha = new SHA1Managed();
+        byte[] hash = sha.ComputeHash(Encoding.UTF8.GetBytes(password));
+        return Convert.ToBase64String(hash);
+    }
 }

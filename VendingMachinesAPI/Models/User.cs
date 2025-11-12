@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace VendingMachinesAPI;
 
@@ -24,16 +25,16 @@ public partial class User
     public string? Password { get; set; }
 
     public byte[]? Photo { get; set; }
-
+    [JsonIgnore]
     public virtual ICollection<Contract> Contracts { get; set; } = new List<Contract>();
-
+    [JsonIgnore]
     public virtual ICollection<Machine> MachineEngineerNavigations { get; set; } = new List<Machine>();
-
+    [JsonIgnore]
     public virtual ICollection<Machine> MachineManagerNavigations { get; set; } = new List<Machine>();
-
+    [JsonIgnore]
     public virtual ICollection<Machine> MachineOperatorNavigations { get; set; } = new List<Machine>();
-
+    [JsonIgnore]
     public virtual ICollection<Rent> Rents { get; set; } = new List<Rent>();
-
+    [JsonIgnore]
     public virtual ICollection<Service> Services { get; set; } = new List<Service>();
 }
